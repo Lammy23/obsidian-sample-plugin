@@ -90,6 +90,9 @@ class CanvasPlayerModal extends Modal {
             this.callStack = savedSession.callStack || [];
         }
 
+        // Tag the modal so we can strictly target it with CSS
+        this.modalEl.addClass("canvas-player-modal");
+
         // UI FIX: Override Obsidian's default modal sizing to make it truly fullscreen edge-to-edge
         this.modalEl.style.width = "100vw";
         this.modalEl.style.height = "100vh";
@@ -106,13 +109,10 @@ class CanvasPlayerModal extends Modal {
     }
 
     onOpen() {
-        // const restartBtn = this.modalEl.createEl("button", {
-        //     cls: "clickable-icon",
-        //     attr: { style: "position: absolute; top: 12px; left: 12px; height: 32px; width: 32px; display: flex; align-items: center; justify-content: center; background: transparent; box-shadow: none; border: none;", "aria-label": "Restart Algorithm" }
-        // });
+        // UI FIX: Swapped hardcoded coords for CSS classes so safe-area-insets can take over
         const restartBtn = this.modalEl.createEl("button", {
-            cls: ["clickable-icon", 'modal-close-button'],
-            attr: { style: "position: absolute; top: 12px; left: 12px; height: 32px; width: 32px; display: flex; align-items: center; justify-content: center;", "aria-label": "Restart Algorithm" }
+            cls: ["clickable-icon", 'modal-close-button', 'canvas-player-restart'],
+            attr: { style: "position: absolute; display: flex; align-items: center; justify-content: center;", "aria-label": "Restart Algorithm" }
         });
         setIcon(restartBtn, 'rotate-ccw');
 
@@ -167,6 +167,20 @@ class CanvasPlayerModal extends Modal {
         // --- INJECT RESPONSIVE CSS ---
         this.contentEl.createEl("style", {
             text: `
+            /* UI FIX: Dynamically dodge the iPhone Notch / Android Camera Hole */
+            .canvas-player-modal .modal-close-button {
+                top: calc(12px + env(safe-area-inset-top, 0px)) !important;
+                height: 32px;
+                width: 32px;
+            }
+            .canvas-player-modal .canvas-player-restart {
+                left: calc(12px + env(safe-area-inset-left, 0px)) !important;
+                right: auto !important; /* Forces it to stay left */
+            }
+            .canvas-player-modal .modal-close-button:not(.canvas-player-restart) {
+                right: calc(12px + env(safe-area-inset-right, 0px)) !important;
+            }
+
             .canvas-player-container {
                 display: flex;
                 flex-direction: column;
@@ -368,7 +382,6 @@ class CanvasPlayerModal extends Modal {
                     const parentContext = this.callStack[this.callStack.length - 1];
                     const returnBtn = buttonContainer.createEl("button", {
                         text: "Return to Parent Protocol ⤴",
-                        // UI FIX: Stripped accent colors to default to standard Obsidian buttons
                         attr: { style: "width: 100%; box-sizing: border-box; padding: 15px; cursor: pointer; font-weight: 600; font-size: 1.1em; border-radius: 8px;" }
                     });
                     returnBtn.onclick = () => {
@@ -384,7 +397,6 @@ class CanvasPlayerModal extends Modal {
                 } else {
                     const finalRestartBtn = buttonContainer.createEl("button", {
                         text: "↻ Restart Protocol",
-                        // UI FIX: Using default Obsidian button styling
                         attr: { style: "width: 100%; box-sizing: border-box; padding: 15px; cursor: pointer; font-weight: 600; font-size: 1.1em; border-radius: 8px; margin-top: 10px;" }
                     });
                     finalRestartBtn.onclick = () => {
@@ -404,7 +416,6 @@ class CanvasPlayerModal extends Modal {
                     const rawLabel = edge.label || "";
                     const btn = buttonContainer.createEl("button", {
                         text: cleanLabelText(rawLabel),
-                        // UI FIX: Removed var(--interactive-accent) to let buttons be native grey/black
                         attr: { style: "width: 100%; box-sizing: border-box; padding: 15px; cursor: pointer; font-weight: 600; font-size: 1.1em; border-radius: 8px;" }
                     });
 
